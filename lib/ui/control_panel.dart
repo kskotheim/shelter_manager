@@ -6,7 +6,6 @@ import 'package:shelter_manager/res/style.dart';
 class ControlPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
     // sets the height based on the screen size
     double height = MediaQuery.of(context).size.height * .2;
     double width;
@@ -48,8 +47,27 @@ class ControlPanel extends StatelessWidget {
                       icon: Icon(Icons.arrow_right),
                       onPressed: gameLogic.closeControlPanel,
                     ),
-                    RescueDogButton(),
-                    FeedDogButton(),
+                    Expanded(
+                      child: ListView(
+                        children: <Widget>[
+                          GameButton(
+                              text: 'Rescue Dog',
+                              onPressed: gameLogic.rescueDog),
+                          GameButton(
+                              text: 'Feed Dog', onPressed: gameLogic.feedDog),
+                          GameButton(
+                              text: 'Hire Volunteer',
+                              onPressed: gameLogic.hireVolunteer),
+                          GameButton(
+                            text: 'Praise Volunteer',
+                            onPressed: gameLogic.praiseVolunteer,
+                          ),
+                          GameButton(
+                              text: 'Hire Employee',
+                              onPressed: gameLogic.hireEmployee),
+                        ],
+                      ),
+                    ),
                     Container()
                   ],
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -61,26 +79,20 @@ class ControlPanel extends StatelessWidget {
   }
 }
 
-class RescueDogButton extends StatelessWidget {
+class GameButton extends StatelessWidget {
+  final Function onPressed;
+  final String text;
+
+  GameButton({this.onPressed, this.text})
+      : assert(onPressed != null, text != null);
+
   @override
   Widget build(BuildContext context) {
-    GameLogic gameLogic = LogicProvider.of<GameLogic>(context);
-
-    return RaisedButton(
-      child: Text('Rescue Dog'),
-      onPressed: gameLogic.rescueDog,
-    );
-  }
-}
-
-class FeedDogButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    GameLogic gameLogic = LogicProvider.of<GameLogic>(context);
-
-    return RaisedButton(
-      child: Text('Feed Dog'),
-      onPressed: gameLogic.feedDog,
+    return Center(
+      child: RaisedButton(
+        child: Text(text),
+        onPressed: onPressed,
+      ),
     );
   }
 }
