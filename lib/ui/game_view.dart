@@ -8,56 +8,104 @@ class GameView extends StatelessWidget {
   Widget build(BuildContext context) {
     GameLogic gameLogic = LogicProvider.of<GameLogic>(context);
 
-    return StreamBuilder<Shelter>(
+    return StreamBuilder<ShelterState>(
       stream: gameLogic.shelterState,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return Container();
 
-        return Stack(
-          children: [
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text("${snapshot.data.dogs} dogs"),
-                  snapshot.data.dogs > 0 ? Text("${snapshot.data.dogs - snapshot.data.dogsFed} hungry") : Container(),
-                  snapshot.data.dogs > 0 ? Text("${snapshot.data.dogsHappy} happy") : Container(),
-                  snapshot.data.dogs > 0 ? Text("${snapshot.data.volunteers} volunteers") : Container(),
-                  snapshot.data.volunteers > 0 ? Text("${snapshot.data.happyVolunteers} happy") : Container(),
-                  snapshot.data.volunteers > 0 ? Text("${snapshot.data.employees} employees") : Container(), 
-                  Text("${snapshot.data.dollars} dollars"),
-
-                ],
-              ),
+        if (gameLogic.gamePanelState == GamePanelState.showGeneralInfo) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  snapshot.data.textToShow.map((text) => Text(text)).toList(),
             ),
+          );
+        }
+        if (gameLogic.gamePanelState == GamePanelState.showDogs) {
+          return buildDogGrid(snapshot, context);
+        }
+        if (gameLogic.gamePanelState == GamePanelState.showVolunteers){
+          return buildVolunteerGrid(snapshot, context);
+        }
+        if (gameLogic.gamePanelState == GamePanelState.showEmployees){
+          return buildEmployeeGrid(snapshot, context);
+        }
+      },
+    );
+  }
 
-            //check overlay flag to see whether to display dog info
-            gameLogic.gameOverlay == GameOverlay.overlayDogs
-            ? GridView.builder(
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(1.0),
-                  child: Container(
-                    color: Color.fromRGBO(20, 20, 20, .2),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                            "Health: ${(snapshot.data.dogHealthList[index]*100).round()}%"),
-                        Text("Happy: ${(snapshot.data.dogHappinessList[index]*100).round()}%"),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              itemCount: snapshot.data.dogs,
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: MediaQuery.of(context).size.width * .25),
-            )
-            : Container(),
-          ],
+  GridView buildDogGrid(
+      AsyncSnapshot<ShelterState> snapshot, BuildContext context) {
+    return GridView.builder(
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.all(1.0),
+          child: Container(
+            color: Color.fromRGBO(20, 20, 20, .2),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                    "Health: ${(snapshot.data.shelter.dogHealthList[index] * 100).round()}%"),
+                Text(
+                    "Happy: ${(snapshot.data.shelter.dogHappinessList[index] * 100).round()}%"),
+              ],
+            ),
+          ),
         );
       },
+      itemCount: snapshot.data.shelter.dogs,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: MediaQuery.of(context).size.width * .25),
+    );
+  }
+
+  GridView buildVolunteerGrid(
+      AsyncSnapshot<ShelterState> snapshot, BuildContext context) {
+    return GridView.builder(
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.all(1.0),
+          child: Container(
+            color: Color.fromRGBO(20, 20, 20, .2),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                    "Happy: ${(snapshot.data.shelter.volunteerHappinessList[index] * 100).round()}%"),
+              ],
+            ),
+          ),
+        );
+      },
+      itemCount: snapshot.data.shelter.volunteers,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: MediaQuery.of(context).size.width * .25),
+    );
+  }
+
+  GridView buildEmployeeGrid(
+      AsyncSnapshot<ShelterState> snapshot, BuildContext context) {
+    return GridView.builder(
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.all(1.0),
+          child: Container(
+            color: Color.fromRGBO(20, 20, 20, .2),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                    "Stability: ${(snapshot.data.shelter.employeeStabilityList[index] * 100).round()}%"),
+              ],
+            ),
+          ),
+        );
+      },
+      itemCount: snapshot.data.shelter.employees,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: MediaQuery.of(context).size.width * .25),
     );
   }
 }

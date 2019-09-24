@@ -64,7 +64,7 @@ class PlayingScreen extends StatelessWidget {
       child: Stack(
         children: [
           GameView(),
-
+          
           ControlPanel(),
         ],
       ),

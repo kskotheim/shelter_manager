@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shelter_manager/logic/base_logic.dart';
 import 'package:shelter_manager/logic/game_logic.dart';
+import 'package:shelter_manager/res/models/shelter.dart';
 import 'package:shelter_manager/res/style.dart';
 
 class ControlPanel extends StatelessWidget {
@@ -35,6 +36,9 @@ class ControlPanel extends StatelessWidget {
                 ),
               );
             }
+
+            //Todo: this logic should be somewhere else, like "shelter state"?
+
             if (snapshot.data is ControlPanelShown) {
               width = MediaQuery.of(context).size.width * .8;
               return Container(
@@ -43,30 +47,63 @@ class ControlPanel extends StatelessWidget {
                 color: Style.controlPanelColor,
                 child: Row(
                   children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.arrow_right),
-                      onPressed: gameLogic.closeControlPanel,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.computer),
+                          onPressed: gameLogic.rotateGamePanelState,
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.arrow_right),
+                          onPressed: gameLogic.closeControlPanel,
+                        ),
+                        Container(),
+                      ],
                     ),
                     Expanded(
-                      child: ListView(
-                        children: <Widget>[
-                          GameButton(
-                              text: 'Rescue Dog',
-                              onPressed: gameLogic.rescueDog),
-                          GameButton(
-                              text: 'Feed Dog', onPressed: gameLogic.feedDog),
-                          GameButton(
-                              text: 'Hire Volunteer',
-                              onPressed: gameLogic.hireVolunteer),
-                          GameButton(
-                            text: 'Praise Volunteer',
-                            onPressed: gameLogic.praiseVolunteer,
-                          ),
-                          GameButton(
-                              text: 'Hire Employee',
-                              onPressed: gameLogic.hireEmployee),
-                        ],
-                      ),
+                      child: StreamBuilder<ShelterState>(
+                          stream: gameLogic.shelterState,
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) return Container();
+
+                            List<Widget> buttonsToShow = <Widget>[];
+
+                            buttonsToShow.add(
+                              GameButton(
+                                  text: 'Rescue Dog',
+                                  onPressed: gameLogic.rescueDog),
+                            );
+
+                            buttonsToShow.add(
+                              GameButton(
+                                  text: 'Feed Dog',
+                                  onPressed: gameLogic.feedAndPetDog),
+                            );
+                            if (snapshot.data.shelter.dogs >= 10)
+                              buttonsToShow.add(
+                                GameButton(
+                                    text: 'Hire Volunteer',
+                                    onPressed: gameLogic.hireVolunteer),
+                              );
+                            if (snapshot.data.shelter.volunteers > 0)
+                              buttonsToShow.add(
+                                GameButton(
+                                  text: 'Praise Volunteer',
+                                  onPressed: gameLogic.praiseVolunteer,
+                                ),
+                              );
+                            if (snapshot.data.shelter.volunteers >= 10)
+                              buttonsToShow.add(
+                                GameButton(
+                                    text: 'Hire Employee',
+                                    onPressed: gameLogic.hireEmployee),
+                              );
+
+                            return ListView(
+                              children: buttonsToShow,
+                            );
+                          }),
                     ),
                     Container()
                   ],
@@ -75,24 +112,6 @@ class ControlPanel extends StatelessWidget {
               );
             }
           }),
-    );
-  }
-}
-
-class GameButton extends StatelessWidget {
-  final Function onPressed;
-  final String text;
-
-  GameButton({this.onPressed, this.text})
-      : assert(onPressed != null, text != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: RaisedButton(
-        child: Text(text),
-        onPressed: onPressed,
-      ),
     );
   }
 }
